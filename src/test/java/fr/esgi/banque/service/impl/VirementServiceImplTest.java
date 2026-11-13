@@ -2,6 +2,7 @@ package fr.esgi.banque.service.impl;
 
 import fr.esgi.banque.business.Compte;
 import fr.esgi.banque.business.CompteIntrouvableException;
+import fr.esgi.banque.business.Virement;
 import fr.esgi.banque.service.CompteRepository;
 import fr.esgi.banque.service.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,10 +16,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -90,6 +94,59 @@ class VirementServiceImplTest {
 		// Act / Assert
 		assertThatThrownBy(() -> service.virer("FR001", "FR002", new BigDecimal("100")))
 				.isInstanceOf(CompteIntrouvableException.class);
+	}
+
+	// ---------------------------------------------------------------- V4
+
+	@Test
+	void shouldDebitSourceAndCreditDestination_V4() {
+		// Arrange
+		Compte source = new Compte("FR001", "Alice", new BigDecimal("500"), BigDecimal.ZERO);
+		Compte destination = new Compte("FR002", "Bob", new BigDecimal("100"), BigDecimal.ZERO);
+		when(repository.trouver("FR001")).thenReturn(Optional.of(source));
+		when(repository.trouver("FR002")).thenReturn(Optional.of(destination));
+
+		// Act
+		service.virer("FR001", "FR002", new BigDecimal("200"));
+
+		// Assert
+		assertThat(source.getSolde()).isEqualByComparingTo("300");
+		assertThat(destination.getSolde()).isEqualByComparingTo("300");
+	}
+
+	@Test
+	void shouldSaveBothAccounts_V4() {
+		// Arrange
+		Compte source = new Compte("FR001", "Alice", new BigDecimal("500"), BigDecimal.ZERO);
+		Compte destination = new Compte("FR002", "Bob", new BigDecimal("100"), BigDecimal.ZERO);
+		when(repository.trouver("FR001")).thenReturn(Optional.of(source));
+		when(repository.trouver("FR002")).thenReturn(Optional.of(destination));
+
+		// Act
+		service.virer("FR001", "FR002", new BigDecimal("200"));
+
+		// Assert
+		verify(repository).sauvegarder(source);
+		verify(repository).sauvegarder(destination);
+	}
+
+	@Test
+	void shouldReturnVirementWithTodayDate_V4() {
+		// Arrange
+		Compte source = new Compte("FR001", "Alice", new BigDecimal("500"), BigDecimal.ZERO);
+		Compte destination = new Compte("FR002", "Bob", new BigDecimal("100"), BigDecimal.ZERO);
+		when(repository.trouver("FR001")).thenReturn(Optional.of(source));
+		when(repository.trouver("FR002")).thenReturn(Optional.of(destination));
+
+		// Act
+		Virement virement = service.virer("FR001", "FR002", new BigDecimal("200"));
+
+		// Assert
+		assertThat(virement).isNotNull();
+		assertThat(virement.numeroSource()).isEqualTo("FR001");
+		assertThat(virement.numeroDestination()).isEqualTo("FR002");
+		assertThat(virement.montant()).isEqualByComparingTo("200");
+		assertThat(virement.date()).isEqualTo(LocalDate.of(2025, 1, 15));
 	}
 
 }
