@@ -1,5 +1,6 @@
 package fr.esgi.banque.service.impl;
 
+import fr.esgi.banque.business.Compte;
 import fr.esgi.banque.business.CompteIntrouvableException;
 import fr.esgi.banque.business.Virement;
 import fr.esgi.banque.service.CompteRepository;
@@ -7,6 +8,7 @@ import fr.esgi.banque.service.NotificationService;
 
 import java.math.BigDecimal;
 import java.time.Clock;
+import java.time.LocalDate;
 
 /**
  * Service de virement entre deux comptes.
@@ -30,9 +32,15 @@ public class VirementServiceImpl {
 		if (numeroSource.equals(numeroDestination)) {
 			throw new IllegalArgumentException("Le virement vers le même compte est interdit");
 		}
-		repository.trouver(numeroSource).orElseThrow(() -> new CompteIntrouvableException(numeroSource));
-		repository.trouver(numeroDestination).orElseThrow(() -> new CompteIntrouvableException(numeroDestination));
-		return null;
+		Compte source = repository.trouver(numeroSource)
+				.orElseThrow(() -> new CompteIntrouvableException(numeroSource));
+		Compte destination = repository.trouver(numeroDestination)
+				.orElseThrow(() -> new CompteIntrouvableException(numeroDestination));
+		source.debiter(montant);
+		destination.crediter(montant);
+		repository.sauvegarder(source);
+		repository.sauvegarder(destination);
+		return new Virement(numeroSource, numeroDestination, montant, LocalDate.now(horloge));
 	}
 
 }
