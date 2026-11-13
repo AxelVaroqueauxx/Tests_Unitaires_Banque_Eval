@@ -104,4 +104,36 @@ class CalculFraisTest {
 		assertThat(frais).isEqualByComparingTo(fraisAttendus);
 	}
 
+
+	/** Avec carte premium, le supplément de 5 € est toujours dû, même si la tenue est offerte. */
+	@ParameterizedTest
+	@CsvSource({
+			"40, 500, 7.00",   // tenue 2 + premium 5
+			"20, 500, 5.00",   // tenue offerte (moins de 26 ans), premium dû
+			"40, 1000, 5.00",  // tenue offerte (solde >= 1000), premium dû
+			"20, 5000, 5.00"   // tenue offerte deux fois, premium dû
+	})
+	void shouldAlwaysChargePremiumSupplement_F5(int age, String soldeMoyen, String fraisAttendus) {
+		// Arrange
+		BigDecimal solde = new BigDecimal(soldeMoyen);
+
+		// Act
+		BigDecimal frais = calculFrais.fraisMensuels(age, solde, true);
+
+		// Assert
+		assertThat(frais).isEqualByComparingTo(fraisAttendus);
+	}
+
+	@Test
+	void shouldNotChargePremiumSupplementWithoutPremiumCard_F5() {
+		// Arrange
+		BigDecimal soldeMoyen = new BigDecimal("5000");
+
+		// Act
+		BigDecimal frais = calculFrais.fraisMensuels(20, soldeMoyen, false);
+
+		// Assert
+		assertThat(frais).isEqualByComparingTo("0");
+	}
+
 }
