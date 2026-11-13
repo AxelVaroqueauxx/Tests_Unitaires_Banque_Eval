@@ -124,4 +124,38 @@ class CompteTest {
 		assertThat(compte.getSolde()).isEqualByComparingTo("100.01");
 	}
 
+
+	@ParameterizedTest
+	@ValueSource(strings = { "0", "0.00", "-0.01", "-50" })
+	void shouldRejectNonPositiveAmountWhenDebiting_C4(String montant) {
+		// Arrange
+		Compte compte = new Compte("FR001", "Alice", new BigDecimal("100"), new BigDecimal("200"));
+
+		// Act / Assert
+		assertThatThrownBy(() -> compte.debiter(new BigDecimal(montant)))
+				.isInstanceOf(IllegalArgumentException.class);
+		assertThat(compte.getSolde()).isEqualByComparingTo("100");
+	}
+
+	@Test
+	void shouldRejectNullAmountWhenDebiting_C4() {
+		// Arrange
+		Compte compte = new Compte("FR001", "Alice", new BigDecimal("100"), new BigDecimal("200"));
+
+		// Act / Assert
+		assertThatThrownBy(() -> compte.debiter(null)).isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
+	void shouldDecreaseBalanceWhenDebiting_C4() {
+		// Arrange
+		Compte compte = new Compte("FR001", "Alice", new BigDecimal("100"), BigDecimal.ZERO);
+
+		// Act
+		compte.debiter(new BigDecimal("30.50"));
+
+		// Assert
+		assertThat(compte.getSolde()).isEqualByComparingTo("69.50");
+	}
+
 }
