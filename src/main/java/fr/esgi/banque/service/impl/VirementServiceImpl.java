@@ -26,6 +26,9 @@ public class VirementServiceImpl {
 		if (montant == null || montant.signum() <= 0) {
 			throw new IllegalArgumentException("Le montant du virement doit être strictement positif");
 		}
+		if (numeroSource.equals(numeroDestination)) {
+			throw new IllegalArgumentException("Le virement vers le même compte est interdit");
+		}
 		return null;
 	}
 
