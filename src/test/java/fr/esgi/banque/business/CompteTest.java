@@ -201,4 +201,31 @@ class CompteTest {
 		assertThat(compte.getSolde()).isEqualByComparingTo("0");
 	}
 
+
+	@ParameterizedTest
+	@ValueSource(strings = { "0", "0.0", "0.00", "0.000" })
+	void shouldBeEmptyWhenBalanceIsZeroWhateverTheScale_C6(String solde) {
+		// Arrange
+		Compte compte = new Compte("FR001", "Alice", new BigDecimal(solde), BigDecimal.ZERO);
+
+		// Act
+		boolean vide = compte.estVide();
+
+		// Assert
+		assertThat(vide).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "0.01", "-0.01", "100" })
+	void shouldNotBeEmptyWhenBalanceIsNotZero_C6(String solde) {
+		// Arrange
+		Compte compte = new Compte("FR001", "Alice", new BigDecimal(solde), new BigDecimal("200"));
+
+		// Act
+		boolean vide = compte.estVide();
+
+		// Assert
+		assertThat(vide).isFalse();
+	}
+
 }
