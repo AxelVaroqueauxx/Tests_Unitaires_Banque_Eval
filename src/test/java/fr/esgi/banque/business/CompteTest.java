@@ -228,7 +228,6 @@ class CompteTest {
 		assertThat(vide).isFalse();
 	}
 
-	// ---------------------------------------------------------------- C7
 
 	@ParameterizedTest
 	@CsvSource({
