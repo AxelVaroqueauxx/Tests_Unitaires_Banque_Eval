@@ -39,7 +39,6 @@ class VirementServiceImplTest {
 		service = new VirementServiceImpl(repository, notifications, horloge);
 	}
 
-	// ---------------------------------------------------------------- V1
 
 	@Test
 	void shouldRejectNullAmount_V1() {
