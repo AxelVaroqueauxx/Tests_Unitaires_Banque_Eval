@@ -2,6 +2,7 @@ package fr.esgi.banque.business;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -156,6 +157,48 @@ class CompteTest {
 
 		// Assert
 		assertThat(compte.getSolde()).isEqualByComparingTo("69.50");
+	}
+
+
+	/** Solde 100, découvert 200 : limite = -200, soit un débit maximal de 300. */
+	@ParameterizedTest
+	@CsvSource({
+			"299.99, -199.99",
+			"300.00, -200.00"
+	})
+	void shouldAcceptDebitUpToOverdraftLimit_C5(String montant, String soldeAttendu) {
+		// Arrange
+		Compte compte = new Compte("FR001", "Alice", new BigDecimal("100"), new BigDecimal("200"));
+
+		// Act
+		compte.debiter(new BigDecimal(montant));
+
+		// Assert
+		assertThat(compte.getSolde()).isEqualByComparingTo(soldeAttendu);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "300.01", "301", "1000" })
+	void shouldRejectDebitBeyondOverdraftLimitAndKeepBalance_C5(String montant) {
+		// Arrange
+		Compte compte = new Compte("FR001", "Alice", new BigDecimal("100"), new BigDecimal("200"));
+
+		// Act / Assert
+		assertThatThrownBy(() -> compte.debiter(new BigDecimal(montant)))
+				.isInstanceOf(SoldeInsuffisantException.class);
+		assertThat(compte.getSolde()).isEqualByComparingTo("100");
+	}
+
+	@Test
+	void shouldAllowEmptyingAccountWhenNoOverdraft_C5() {
+		// Arrange
+		Compte compte = new Compte("FR001", "Alice", new BigDecimal("100"), BigDecimal.ZERO);
+
+		// Act
+		compte.debiter(new BigDecimal("100"));
+
+		// Assert
+		assertThat(compte.getSolde()).isEqualByComparingTo("0");
 	}
 
 }
