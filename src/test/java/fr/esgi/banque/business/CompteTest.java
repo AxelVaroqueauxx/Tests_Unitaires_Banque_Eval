@@ -90,4 +90,38 @@ class CompteTest {
 		assertThat(compte.getDecouvertAutorise()).isEqualByComparingTo(decouvert);
 	}
 
+
+	@ParameterizedTest
+	@ValueSource(strings = { "0", "0.00", "-0.01", "-50" })
+	void shouldRejectNonPositiveAmountWhenCrediting_C3(String montant) {
+		// Arrange
+		Compte compte = new Compte("FR001", "Alice", new BigDecimal("100"), BigDecimal.ZERO);
+
+		// Act / Assert
+		assertThatThrownBy(() -> compte.crediter(new BigDecimal(montant)))
+				.isInstanceOf(IllegalArgumentException.class);
+		assertThat(compte.getSolde()).isEqualByComparingTo("100");
+	}
+
+	@Test
+	void shouldRejectNullAmountWhenCrediting_C3() {
+		// Arrange
+		Compte compte = new Compte("FR001", "Alice", new BigDecimal("100"), BigDecimal.ZERO);
+
+		// Act / Assert
+		assertThatThrownBy(() -> compte.crediter(null)).isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
+	void shouldAcceptSmallestPositiveAmountWhenCrediting_C3() {
+		// Arrange
+		Compte compte = new Compte("FR001", "Alice", new BigDecimal("100"), BigDecimal.ZERO);
+
+		// Act
+		compte.crediter(new BigDecimal("0.01"));
+
+		// Assert
+		assertThat(compte.getSolde()).isEqualByComparingTo("100.01");
+	}
+
 }
