@@ -57,4 +57,37 @@ class CompteTest {
 		assertThat(compte.getTitulaire()).isEqualTo("Alice");
 	}
 
+
+	@Test
+	void shouldRejectNullInitialBalance_C2() {
+		// Arrange / Act / Assert
+		assertThatThrownBy(() -> new Compte("FR001", "Alice", null, BigDecimal.ZERO))
+				.isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
+	void shouldRejectNullOverdraft_C2() {
+		// Arrange / Act / Assert
+		assertThatThrownBy(() -> new Compte("FR001", "Alice", BigDecimal.TEN, null))
+				.isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-0.01", "-1", "-500" })
+	void shouldRejectNegativeOverdraft_C2(String decouvert) {
+		// Arrange / Act / Assert
+		assertThatThrownBy(() -> new Compte("FR001", "Alice", BigDecimal.TEN, new BigDecimal(decouvert)))
+				.isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "0", "0.00", "0.01", "200" })
+	void shouldAcceptZeroOrPositiveOverdraft_C2(String decouvert) {
+		// Arrange / Act
+		Compte compte = new Compte("FR001", "Alice", BigDecimal.TEN, new BigDecimal(decouvert));
+
+		// Assert
+		assertThat(compte.getDecouvertAutorise()).isEqualByComparingTo(decouvert);
+	}
+
 }
