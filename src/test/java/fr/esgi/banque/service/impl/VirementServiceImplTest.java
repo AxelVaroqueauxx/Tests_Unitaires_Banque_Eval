@@ -55,4 +55,15 @@ class VirementServiceImplTest {
 				.isInstanceOf(IllegalArgumentException.class);
 	}
 
+
+	@Test
+	void shouldRejectTransferToSameAccount_V2() {
+		// Arrange
+		BigDecimal montant = new BigDecimal("100");
+
+		// Act / Assert
+		assertThatThrownBy(() -> service.virer("FR001", "FR001", montant))
+				.isInstanceOf(IllegalArgumentException.class);
+	}
+
 }
