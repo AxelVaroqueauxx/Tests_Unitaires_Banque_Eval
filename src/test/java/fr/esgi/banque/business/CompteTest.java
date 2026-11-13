@@ -228,4 +228,26 @@ class CompteTest {
 		assertThat(vide).isFalse();
 	}
 
+	// ---------------------------------------------------------------- C7
+
+	@ParameterizedTest
+	@CsvSource({
+			"-0.01, true",
+			"-100, true",
+			"0, false",
+			"0.00, false",
+			"0.01, false",
+			"100, false"
+	})
+	void shouldBeOverdrawnOnlyWhenBalanceIsStrictlyNegative_C7(String solde, boolean attendu) {
+		// Arrange
+		Compte compte = new Compte("FR001", "Alice", new BigDecimal(solde), new BigDecimal("200"));
+
+		// Act
+		boolean aDecouvert = compte.estADecouvert();
+
+		// Assert
+		assertThat(aDecouvert).isEqualTo(attendu);
+	}
+
 }
