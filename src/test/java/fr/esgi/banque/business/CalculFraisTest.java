@@ -47,4 +47,17 @@ class CalculFraisTest {
 				.isInstanceOf(IllegalArgumentException.class);
 	}
 
+	@Test
+	void shouldChargeMonthlyFeeOfTwoEuros_F2() {
+		// Arrange
+		int age = 40;
+		BigDecimal soldeMoyen = new BigDecimal("500");
+
+		// Act
+		BigDecimal frais = calculFrais.fraisMensuels(age, soldeMoyen, false);
+
+		// Assert
+		assertThat(frais).isEqualByComparingTo("2.00");
+	}
+
 }
