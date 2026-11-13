@@ -32,15 +32,17 @@ public class VirementServiceImpl {
 		if (numeroSource.equals(numeroDestination)) {
 			throw new IllegalArgumentException("Le virement vers le même compte est interdit");
 		}
-		Compte source = repository.trouver(numeroSource)
-				.orElseThrow(() -> new CompteIntrouvableException(numeroSource));
-		Compte destination = repository.trouver(numeroDestination)
-				.orElseThrow(() -> new CompteIntrouvableException(numeroDestination));
+		Compte source = trouverCompte(numeroSource);
+		Compte destination = trouverCompte(numeroDestination);
 		source.debiter(montant);
 		destination.crediter(montant);
 		repository.sauvegarder(source);
 		repository.sauvegarder(destination);
 		return new Virement(numeroSource, numeroDestination, montant, LocalDate.now(horloge));
+	}
+
+	private Compte trouverCompte(String numero) {
+		return repository.trouver(numero).orElseThrow(() -> new CompteIntrouvableException(numero));
 	}
 
 }
